@@ -11,6 +11,7 @@ This repository contains the backend service for a full-stack e-commerce applica
 * Spring Boot
 * Spring Security (JWT)
 * Spring Data JPA / Hibernate
+* Flyway (for database migrations)
 * MySQL
 * Maven
 
@@ -27,6 +28,15 @@ You will need the following tools installed on your system:
 * [JDK 17 or later](https://www.oracle.com/java/technologies/downloads/)
 * [Apache Maven](https://maven.apache.org/download.cgi)
 * [MySQL Server](https://dev.mysql.com/downloads/mysql/)
+
+### IDE Configuration (IntelliJ IDEA)
+
+This project uses **Lombok** to reduce boilerplate code. To ensure the IDE recognizes the generated methods (getters, setters, etc.), you must enable annotation processing:
+
+1.  Go to `File > Settings` (or `IntelliJ IDEA > Preferences` on macOS).
+2.  Navigate to `Build, Execution, Deployment > Compiler > Annotation Processors`.
+3.  Check the box for **`Enable annotation processing`**.
+4.  Apply the changes.
 
 ### Installation & Setup
 
