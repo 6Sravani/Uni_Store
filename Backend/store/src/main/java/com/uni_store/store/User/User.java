@@ -11,6 +11,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.Instant;
 import java.util.LinkedHashSet;
+import java.util.Optional;
 import java.util.Set;
 
 @Entity
@@ -83,5 +84,52 @@ public class User {
     public void removeAddress(Address address) {
         addresses.remove(address);
         address.setUser(null);
+    }
+
+    public void changeEmail(String email) {
+        this.email = email;
+        this.emailVerified = false;
+    }
+    public void changePassword(String password) {
+        this.passwordHash = password;
+    }
+    public void changeName(String firstName, String lastName) {
+        this.firstName = firstName;
+        this.lastName = lastName;
+    }
+    public boolean isAdmin(){
+        return UserRole.ADMIN.equals(this.role);
+    }
+    public void promoteToAdmin() {
+        this.role = UserRole.ADMIN;
+    }
+    public void demoteToCustomer() {
+        this.role = UserRole.CUSTOMER;
+    }
+    public boolean isActive() {
+        return isActive;
+    }
+    public void activate() {
+        this.isActive = true;
+    }
+    public void deactivate() {
+        this.isActive = false;
+    }
+    public boolean isEmailVerified() {
+        return emailVerified;
+    }
+    public void verifyEmail() {
+        this.emailVerified = true;
+    }
+    public void unVerifyEmail() {
+        this.emailVerified = false;
+    }
+    public boolean canLogin() {
+        return isActive && emailVerified;
+    }
+    public Optional<Address> getDefaultAddress(AddressType addressType) {
+        return addresses.stream()
+                .filter(address -> addressType.equals(address.getAddressType()) && address.getIsDefault())
+                .findFirst();
     }
 }
