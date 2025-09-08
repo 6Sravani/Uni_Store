@@ -6,24 +6,52 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
 @Transactional
 public class USerService {
+
+    private final UserMapper userMapper;
     private final UserRepository userRepository;
-    private User createUser(String email,String password, String firstName, String lastName) {
-        if(userRepository.existsByEmail(email)) {
+
+    public UserResponseDto createUser(UserRegistrationDto registrationDto) {
+        if(userExists(registrationDto.getEmail())) {
             throw new RuntimeException("Email already exists");
         }
-        User user = User.builder()
-                .email(email)
-                .passwordHash(password)
-                .firstName(firstName)
-                .lastName(lastName)
-                .build();
-        return userRepository.save(user);
+        User user=userMapper.userRegistrationDtoToUser(registrationDto);
+
+        User savedUser=userRepository.save(user);
+
+        return userMapper.userToUserResponceDto(savedUser);
     }
+
+    public UserResponseDto updateUser(Long id, UserUpdateDto userUpdateDto) {
+        User user = getUserByIdOrThrow(id);
+
+        String newEmail = userUpdateDto.getEmail();
+        if(newEmail != null && !newEmail.equals(user.getEmail())) {
+            if(userExists(newEmail)) {
+                throw new RuntimeException("Email already exists");
+            }
+            user.changeEmail(newEmail);
+        }
+        String newPassword = userUpdateDto.getPassword();
+        if(newPassword != null && !newPassword.equals(user.getPasswordHash())) {
+            user.changePassword(newPassword);
+        }
+
+        userMapper.updateUserFromDto(userUpdateDto, user);
+
+        return userMapper.userToUserResponceDto(user);
+    }
+
+    public void deleteUser(Long id) {
+        User userToDelete = getUserByIdOrThrow(id);
+        userRepository.delete(userToDelete);
+    }
+
     public Optional<User> getUserById(Long id) {
         return userRepository.findById(id);
     }
@@ -38,85 +66,77 @@ public class USerService {
         return userRepository.findByEmail(email)
                 .orElseThrow(()->new RuntimeException("User not found"));
     }
-    public User updateUser(Long id, String email, String password, String firstName, String lastName) {
-        User user = getUserByIdOrThrow(id);
-        if(email != null && !email.equals(user.getEmail()) && userRepository.existsByEmail(email)) {
-            throw new RuntimeException("Email already exists");
-        }
-        if(firstName != null || lastName != null) {
-            user.changeName(
-                    firstName != null ? firstName:user.getFirstName(),
-                    lastName != null ? lastName:user.getLastName()
-            );
-        }
-        if(email != null && !email.equals(user.getEmail())){
-            user.changeEmail(email);
-        }
-        if(password != null && !password.equals(user.getPasswordHash())) {
-            user.changePassword(password);
-        }
-        return userRepository.save(user);
-    }
-    public void deleteUser(Long id) {
-        if(!userRepository.existsById(id)) {
-            throw new RuntimeException("User not found");
-        }
-        userRepository.deleteById(id);
-    }
+
     public boolean userExists(String email) {
         return userRepository.existsByEmail(email);
     }
-    public User deactivateUser(Long id) {
+    public UserResponseDto deactivateUser(Long id) {
         User user = getUserByIdOrThrow(id);
         user.deactivate();
-        return userRepository.save(user);
+        userRepository.save(user);
+        return userMapper.userToUserResponceDto(user);
     }
 
-    public User activateUser(Long id) {
+    public UserResponseDto activateUser(Long id) {
         User user = getUserByIdOrThrow(id);
         user.activate();
-        return userRepository.save(user);
+        userRepository.save(user);
+        return userMapper.userToUserResponceDto(user);
     }
 
-    public User markEmailAsVerified(Long id) {
+    public UserResponseDto markEmailAsVerified(Long id) {
         User user = getUserByIdOrThrow(id);
         user.verifyEmail();
-        return userRepository.save(user);
+        userRepository.save(user);
+        return userMapper.userToUserResponceDto(user);
     }
 
-    public User markEmailAsUnverified(Long id) {
+    public UserResponseDto markEmailAsUnverified(Long id) {
         User user = getUserByIdOrThrow(id);
         user.unVerifyEmail();
-        return userRepository.save(user);
+        userRepository.save(user);
+        return userMapper.userToUserResponceDto(user);
     }
-    public User changePassword(Long id, String password) {
+    public UserResponseDto changePassword(Long id, String password) {
         User user = getUserByIdOrThrow(id);
         user.changePassword(password);
-        return userRepository.save(user);
+        userRepository.save(user);
+        return userMapper.userToUserResponceDto(user);
     }
 
-    public User promoteToAdmin(Long id) {
+    public UserResponseDto promoteToAdmin(Long id) {
         User user = getUserByIdOrThrow(id);
         user.promoteToAdmin();
-        return userRepository.save(user);
+        userRepository.save(user);
+        return userMapper.userToUserResponceDto(user);
     }
 
-    public User demoteToCustomer(Long id) {
+    public UserResponseDto demoteToCustomer(Long id) {
         User user = getUserByIdOrThrow(id);
         user.demoteToCustomer();
-        return userRepository.save(user);
+        userRepository.save(user);
+        return userMapper.userToUserResponceDto(user);
     }
 
-    public List<User> getAllActiveUsers() {
-        return userRepository.findByIsActiveTrue();
+    public List<UserResponseDto> getAllActiveUsers() {
+        List<User> activeUserEntities =userRepository.findByIsActiveTrue();
+        return activeUserEntities.stream()
+                .map(userMapper::userToUserResponceDto)
+                .toList();
     }
 
-    public List<User> getUsersByRole(UserRole role) {
-        return userRepository.findByRole(role);
+    public List<UserResponseDto> getUsersByRole(UserRole role) {
+        List<User> roleBasedEntities = userRepository.findByRole(role);
+        return roleBasedEntities.stream()
+                .map(userMapper::userToUserResponceDto)
+                .toList();
     }
 
-    public List<User> getUsersByEmailVerifiedStatus(Boolean emailVerified) {
-        return userRepository.findByEmailVerified(emailVerified);
+    public List<UserResponseDto> getUsersByEmailVerifiedStatus(Boolean emailVerified) {
+        List<User> emailVerifiedStatusEntities = userRepository.findByEmailVerified(emailVerified);
+        return emailVerifiedStatusEntities.stream()
+                .map(userMapper::userToUserResponceDto)
+                .toList();
     }
 
     public long countActiveUsers() {
