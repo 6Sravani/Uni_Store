@@ -1,5 +1,7 @@
 package com.uni_store.store.User;
 
+import com.uni_store.store.exception.EmailAlreadyExistsException;
+import com.uni_store.store.exception.ResourceNotFoundException;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,7 +19,7 @@ public class UserService {
 
     public UserResponseDto createUser(UserRegistrationDto registrationDto) {
         if(userExists(registrationDto.getEmail())) {
-            throw new RuntimeException("Email already exists");
+            throw new EmailAlreadyExistsException(registrationDto.getEmail()+"Email already exists");
         }
         User user=userMapper.userRegistrationDtoToUser(registrationDto);
 
@@ -32,7 +34,7 @@ public class UserService {
         String newEmail = userUpdateDto.getEmail();
         if(newEmail != null && !newEmail.isBlank() && !newEmail.equals(user.getEmail())) {
             if(userExists(newEmail)) {
-                throw new RuntimeException("Email already exists");
+                throw new EmailAlreadyExistsException(newEmail+"Email already exists");
             }
             user.changeEmail(newEmail);
         }
@@ -52,19 +54,20 @@ public class UserService {
     }
 
     public UserResponseDto getUserById(Long id) {
-        var user=userRepository.findById(id).orElseThrow(()->new RuntimeException("User not found"));
+        var user=userRepository.findById(id)
+                .orElseThrow(()->new ResourceNotFoundException("User with id "+id+" not found"));
         return userMapper.userToUserResponceDto(user);
     }
     private User getUserByIdOrThrow(Long id) {
         return userRepository.findById(id)
-                .orElseThrow(()->new RuntimeException("User not found"));
+                .orElseThrow(()->new ResourceNotFoundException("User with id "+id+" not found"));
     }
     public Optional<User> getUserByEmail(String email) {
         return userRepository.findByEmail(email);
     }
     public User getUserByEmailOrThrow(String email) {
         return userRepository.findByEmail(email)
-                .orElseThrow(()->new RuntimeException("User not found"));
+                .orElseThrow(()->new ResourceNotFoundException("User with email "+email+" not found"));
     }
 
     public boolean userExists(String email) {

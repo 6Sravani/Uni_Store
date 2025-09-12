@@ -1,5 +1,6 @@
 package com.uni_store.store.User;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,7 +16,7 @@ public class UserController {
 
     @PostMapping
     public ResponseEntity<UserResponseDto> registerUser(
-            @RequestBody UserRegistrationDto request,
+            @Valid @RequestBody UserRegistrationDto request,
             UriComponentsBuilder uriBuilder
     ){
         var userDto = userService.createUser(request);
@@ -37,7 +38,7 @@ public class UserController {
 
     @PutMapping("/{id}")
     public ResponseEntity<UserResponseDto> updateUser(
-            @RequestBody UserUpdateDto request,
+            @Valid @RequestBody UserUpdateDto request,
             @PathVariable Long id
     ){
         var userDto=userService.updateUser(id,request);
