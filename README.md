@@ -4,6 +4,32 @@ This repository contains the backend service for a full-stack e-commerce applica
 
 ---
 
+## Backend Features & API Capabilities
+
+The backend provides a complete and secure RESTful API for the User Domain.
+
+* **Professional Architecture:** Built using a layered architecture (Controller, Service, Repository) with a Rich Domain Model.
+* **Secure by Design:** Utilizes the Data Transfer Object (DTO) pattern and MapStruct to create a secure API contract, preventing internal data models from being exposed.
+* **Robust Error Handling:** Features a centralized, global exception handler (`@RestControllerAdvice`) to provide consistent and predictable JSON error responses.
+* **User Registration:** Includes a secure endpoint for creating new user accounts with server-side password hashing.
+* **Foundation for Authorization:** The `User` model includes a `role` field, preparing the application for future role-based access control (e.g., USER vs. ADMIN).
+* **Full User CRUD:** Complete Create, Read, Update, and Delete operations for user management.
+
+
+## API Endpoints
+
+The following is a summary of the core CRUD endpoints for the User Domain. All endpoints are prefixed with `/api`.
+
+| HTTP Method | URL Path          | Description                          |
+| :---------- | :---------------- | :----------------------------------- |
+| `POST`      | `/users`          | Registers a new user.                |
+| `GET`       | `/users`          | Retrieves a list of all users.       |
+| `GET`       | `/users/{id}`     | Retrieves a single user by their ID. |
+| `PUT`       | `/users/{id}`     | Updates an existing user's details.  |
+| `DELETE`    | `/users/{id}`     | Deletes a user.                      |
+
+---
+
 ## Tech Stack
 
 **Backend Technologies:**
