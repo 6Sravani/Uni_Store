@@ -10,7 +10,7 @@ public class UserRegistrationDto {
     private String email;
 
     @NotBlank
-    private String password;
+    private String passwordHash;
 
     @NotBlank
     private String firstName;

@@ -6,12 +6,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
 @Transactional
-public class USerService {
+public class UserService {
 
     private final UserMapper userMapper;
     private final UserRepository userRepository;
@@ -31,14 +30,14 @@ public class USerService {
         User user = getUserByIdOrThrow(id);
 
         String newEmail = userUpdateDto.getEmail();
-        if(newEmail != null && !newEmail.equals(user.getEmail())) {
+        if(newEmail != null && !newEmail.isBlank() && !newEmail.equals(user.getEmail())) {
             if(userExists(newEmail)) {
                 throw new RuntimeException("Email already exists");
             }
             user.changeEmail(newEmail);
         }
         String newPassword = userUpdateDto.getPassword();
-        if(newPassword != null && !newPassword.equals(user.getPasswordHash())) {
+        if(newPassword != null&& !newPassword.isBlank() && !newPassword.equals(user.getPasswordHash())) {
             user.changePassword(newPassword);
         }
 
@@ -52,10 +51,11 @@ public class USerService {
         userRepository.delete(userToDelete);
     }
 
-    public Optional<User> getUserById(Long id) {
-        return userRepository.findById(id);
+    public UserResponseDto getUserById(Long id) {
+        var user=userRepository.findById(id).orElseThrow(()->new RuntimeException("User not found"));
+        return userMapper.userToUserResponceDto(user);
     }
-    public User getUserByIdOrThrow(Long id) {
+    private User getUserByIdOrThrow(Long id) {
         return userRepository.findById(id)
                 .orElseThrow(()->new RuntimeException("User not found"));
     }

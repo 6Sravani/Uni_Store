@@ -11,6 +11,8 @@ This repository contains the backend service for a full-stack e-commerce applica
 * Spring Boot
 * Spring Security (JWT)
 * Spring Data JPA / Hibernate
+* Lombok (for reducing boilerplate code)
+* MapStruct (for efficient DTO mapping)
 * Flyway (for database migrations)
 * MySQL
 * Maven
@@ -62,6 +64,7 @@ This project uses **Lombok** to reduce boilerplate code. To ensure the IDE recog
     * Open the `Backend/store/` directory as a project in your IDE (e.g., IntelliJ IDEA).
     * Allow Maven to download all the required dependencies.
     * Run the main application (`StoreApplication.java`).
+    * On the first run, Flyway will automatically execute the migration scripts to create the necessary tables.
     * The server is now running and available at `http://localhost:8080`.
 ---
 
