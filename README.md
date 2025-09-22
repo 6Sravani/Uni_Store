@@ -1,12 +1,12 @@
 # University Store - E-Commerce Platform
 
-This repository contains the backend service for a full-stack e-commerce application for university merchandise. It is built with a robust, enterprise-grade Java and Spring Boot stack.
+This repository contains the backend service for a full-stack e-commerce application for university merchandise. It is built with a robust, enterprise-grade Java and Spring Boot stack.It includes a complete, public-facing API for a complex product catalog with categories and variations.
 
 ---
 
 ## Backend Features & API Capabilities
 
-The backend provides a complete and secure RESTful API for the User Domain.
+The backend provides a complete and secure RESTful API for the User and Product Domains.
 
 * **Professional Architecture:** Built using a layered architecture (Controller, Service, Repository) with a Rich Domain Model.
 * **Secure by Design:** Utilizes the Data Transfer Object (DTO) pattern and MapStruct to create a secure API contract, preventing internal data models from being exposed.
@@ -14,11 +14,14 @@ The backend provides a complete and secure RESTful API for the User Domain.
 * **User Registration:** Includes a secure endpoint for creating new user accounts with server-side password hashing.
 * **Foundation for Authorization:** The `User` model includes a `role` field, preparing the application for future role-based access control (e.g., USER vs. ADMIN).
 * **Full User CRUD:** Complete Create, Read, Update, and Delete operations for user management.
+* **Advanced Product Catalog:** A fully normalized schema to support products with complex variations (e.g., size, color), attributes, and multiple images.
+* **Hierarchical Categories:** A flexible, multi-level category system to organize the product catalog.
+* **High-Performance Queries:** Custom JPQL with `JOIN FETCH` is used to solve the N+1 query problem, ensuring efficient data retrieval.
 
 
 ## API Endpoints
 
-The following is a summary of the core CRUD endpoints for the User Domain. All endpoints are prefixed with `/api`.
+The following is a summary of the core public-facing endpoints (User and product Domain). All endpoints are prefixed with `/api`.
 
 | HTTP Method | URL Path          | Description                          |
 | :---------- | :---------------- | :----------------------------------- |
@@ -27,6 +30,13 @@ The following is a summary of the core CRUD endpoints for the User Domain. All e
 | `GET`       | `/users/{id}`     | Retrieves a single user by their ID. |
 | `PUT`       | `/users/{id}`     | Updates an existing user's details.  |
 | `DELETE`    | `/users/{id}`     | Deletes a user.                      |
+
+### Product Catalog Endpoints
+| HTTP Method | URL Path                | Description                                        |
+| :---------- | :---------------------- | :------------------------------------------------- |
+| `GET`       | `/api/categories`       | Retrieves the hierarchical list of all categories. |
+| `GET`       | `/api/products`         | Retrieves a paginated list of all products.        |
+| `GET`       | `/api/products/{slug}`  | Retrieves the full details of a single product.    |
 
 ---
 
