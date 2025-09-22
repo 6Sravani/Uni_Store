@@ -45,13 +45,27 @@ public class ProductService {
         return topLevelCategories;
     }
 
-    public Page<ProductSummaryDto> getAllProducts(Pageable pageable) {
-        Page<Product> productPage=productRepository.findAll(pageable);
-        return productPage.map(productMapper::toProductSummaryDto);
+    public PageDto<ProductSummaryDto> getAllProducts(Pageable pageable) {
+        Page<Product> productPage=productRepository.findAllWithDetails(pageable);
+
+        List<ProductSummaryDto> dtoList = productPage.getContent().stream()
+                .map(productMapper::toProductSummaryDto)
+                .toList();
+
+        // 3. Manually create and return your custom PageDto, pulling the metadata
+        //    from the original Page object.
+        return new PageDto<>(
+                dtoList,
+                productPage.getNumber(),      // The current page number
+                productPage.getSize(),        // The number of items per page
+                productPage.getTotalElements(),// The total number of products
+                productPage.getTotalPages(),  // The total number of pages
+                productPage.isLast()          // Whether this is the last page
+        );
     }
 
     public ProductDetailDto getProductBySlug(String slug) {
-        Product product=productRepository.findBySlug(slug)
+        Product product=productRepository.findBySlugWithDetails(slug)
                 .orElseThrow(() -> new ResourceNotFoundException("Product Not Found"));
         return productMapper.toProductDetailDto(product);
     }

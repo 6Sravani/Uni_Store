@@ -52,6 +52,7 @@ public interface ProductMapper {
     }
 
 
+    @Mapping(target = "variants", source = "productVariants")
     @Mapping(target = "options", source = "productVariants")
     ProductDetailDto toProductDetailDto(Product product);
 
@@ -60,7 +61,7 @@ public interface ProductMapper {
             return List.of();
         }
         Map<String, Set<String>> attributesMap = variants.stream()
-                .flatMap(variant -> variant.getProductAttributeValues().stream())
+                .flatMap(variant -> variant.getAttributeValues().stream())
                 .collect(Collectors.groupingBy(
                         attributeValue -> attributeValue.getProductAttribute().getName(),
                         Collectors.mapping(ProductAttributeValue::getValue, Collectors.toSet())

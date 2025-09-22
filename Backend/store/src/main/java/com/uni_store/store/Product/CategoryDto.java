@@ -1,5 +1,6 @@
 package com.uni_store.store.Product;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public record CategoryDto(
@@ -7,4 +8,10 @@ public record CategoryDto(
         String name,
         String slug,
         List<CategoryDto> children
-) { }
+) {
+    public CategoryDto {
+        if (children == null) {
+            children = new ArrayList<>();
+        }
+    }
+}

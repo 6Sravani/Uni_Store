@@ -83,15 +83,15 @@ public class ProductVariant {
             inverseJoinColumns = @JoinColumn(name = "product_attribute_value_id")
     )
     @Builder.Default
-    private Set<ProductAttributeValue> productAttributeValues = new LinkedHashSet<>();
+    private Set<ProductAttributeValue> attributeValues = new LinkedHashSet<>();
 
 
     public void addAttributeValue(ProductAttributeValue value) {
-        this.productAttributeValues.add(value);
+        this.attributeValues.add(value);
     }
 
     public void removeAttributeValue(ProductAttributeValue value) {
-        this.productAttributeValues.remove(value);
+        this.attributeValues.remove(value);
     }
 
     public void addProductImage(ProductImage image) {
