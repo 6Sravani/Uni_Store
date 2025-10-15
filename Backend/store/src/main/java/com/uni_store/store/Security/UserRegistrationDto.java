@@ -1,4 +1,4 @@
-package com.uni_store.store.User;
+package com.uni_store.store.Security;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -10,7 +10,7 @@ public class UserRegistrationDto {
     private String email;
 
     @NotBlank
-    private String passwordHash;
+    private String password;
 
     @NotBlank
     private String firstName;

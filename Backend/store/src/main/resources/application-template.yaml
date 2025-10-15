@@ -15,3 +15,7 @@ spring :
     password: YOUR_DATABASE_PASSWORD
   jpa:
     show-sql: true
+  jwt:
+    secretKey: ${JWT_SECRET}
+    accessTokenExpiration: 900 #15m
+    refreshTokenExpiration: 604800 #7d

@@ -1,2 +1,3 @@
 .idea/
 Backend/store/src/main/resources/application.yaml
+.env

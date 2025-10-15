@@ -1,8 +1,13 @@
 package com.uni_store.store.User;
 
+import com.uni_store.store.Admin.AdminUserUpdateDto;
+import com.uni_store.store.Product.PageDto;
 import com.uni_store.store.exception.EmailAlreadyExistsException;
 import com.uni_store.store.exception.ResourceNotFoundException;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,20 +21,10 @@ public class UserService {
 
     private final UserMapper userMapper;
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserResponseDto createUser(UserRegistrationDto registrationDto) {
-        if(userExists(registrationDto.getEmail())) {
-            throw new EmailAlreadyExistsException(registrationDto.getEmail()+"Email already exists");
-        }
-        User user=userMapper.userRegistrationDtoToUser(registrationDto);
-
-        User savedUser=userRepository.save(user);
-
-        return userMapper.userToUserResponceDto(savedUser);
-    }
-
-    public UserResponseDto updateUser(Long id, UserUpdateDto userUpdateDto) {
-        User user = getUserByIdOrThrow(id);
+    public UserResponseDto updateUserProfile(String email, UserUpdateDto userUpdateDto) {
+        User user = getUserByEmailOrThrow(email);
 
         String newEmail = userUpdateDto.getEmail();
         if(newEmail != null && !newEmail.isBlank() && !newEmail.equals(user.getEmail())) {
@@ -39,13 +34,13 @@ public class UserService {
             user.changeEmail(newEmail);
         }
         String newPassword = userUpdateDto.getPassword();
-        if(newPassword != null&& !newPassword.isBlank() && !newPassword.equals(user.getPasswordHash())) {
-            user.changePassword(newPassword);
+        if(newPassword != null&& !newPassword.isBlank()) {
+            user.changePassword(passwordEncoder.encode(newPassword));
         }
 
         userMapper.updateUserFromDto(userUpdateDto, user);
 
-        return userMapper.userToUserResponceDto(user);
+        return userMapper.userToUserResponseDto(user);
     }
 
     public void deleteUser(Long id) {
@@ -53,10 +48,19 @@ public class UserService {
         userRepository.delete(userToDelete);
     }
 
+    public UserResponseDto updateUserByAdmin(Long id, AdminUserUpdateDto updateDto) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
+
+        userMapper.updateUserFromAdminDto(updateDto, user);
+
+        return userMapper.userToUserResponseDto(user);
+    }
+
     public UserResponseDto getUserById(Long id) {
         var user=userRepository.findById(id)
                 .orElseThrow(()->new ResourceNotFoundException("User with id "+id+" not found"));
-        return userMapper.userToUserResponceDto(user);
+        return userMapper.userToUserResponseDto(user);
     }
     private User getUserByIdOrThrow(Long id) {
         return userRepository.findById(id)
@@ -69,6 +73,11 @@ public class UserService {
         return userRepository.findByEmail(email)
                 .orElseThrow(()->new ResourceNotFoundException("User with email "+email+" not found"));
     }
+    public UserResponseDto getUserByEmailAsDto(String email) {
+        return userRepository.findByEmail(email)
+                .map(userMapper::userToUserResponseDto)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + email));
+    }
 
     public boolean userExists(String email) {
         return userRepository.existsByEmail(email);
@@ -77,68 +86,97 @@ public class UserService {
         User user = getUserByIdOrThrow(id);
         user.deactivate();
         userRepository.save(user);
-        return userMapper.userToUserResponceDto(user);
+        return userMapper.userToUserResponseDto(user);
     }
 
     public UserResponseDto activateUser(Long id) {
         User user = getUserByIdOrThrow(id);
         user.activate();
         userRepository.save(user);
-        return userMapper.userToUserResponceDto(user);
+        return userMapper.userToUserResponseDto(user);
     }
 
     public UserResponseDto markEmailAsVerified(Long id) {
         User user = getUserByIdOrThrow(id);
         user.verifyEmail();
         userRepository.save(user);
-        return userMapper.userToUserResponceDto(user);
+        return userMapper.userToUserResponseDto(user);
     }
 
     public UserResponseDto markEmailAsUnverified(Long id) {
         User user = getUserByIdOrThrow(id);
         user.unVerifyEmail();
         userRepository.save(user);
-        return userMapper.userToUserResponceDto(user);
+        return userMapper.userToUserResponseDto(user);
     }
     public UserResponseDto changePassword(Long id, String password) {
         User user = getUserByIdOrThrow(id);
         user.changePassword(password);
         userRepository.save(user);
-        return userMapper.userToUserResponceDto(user);
+        return userMapper.userToUserResponseDto(user);
     }
 
     public UserResponseDto promoteToAdmin(Long id) {
         User user = getUserByIdOrThrow(id);
         user.promoteToAdmin();
         userRepository.save(user);
-        return userMapper.userToUserResponceDto(user);
+        return userMapper.userToUserResponseDto(user);
     }
 
     public UserResponseDto demoteToCustomer(Long id) {
         User user = getUserByIdOrThrow(id);
         user.demoteToCustomer();
         userRepository.save(user);
-        return userMapper.userToUserResponceDto(user);
+        return userMapper.userToUserResponseDto(user);
     }
 
-    public List<UserResponseDto> getAllActiveUsers() {
-        List<User> activeUserEntities =userRepository.findByIsActiveTrue();
-        return activeUserEntities.stream()
-                .map(userMapper::userToUserResponceDto)
+    public PageDto<UserResponseDto> getAllActiveUsers(Pageable pageable) {
+
+        Page<User> userPage = userRepository.findByIsActiveTrue(pageable);
+
+        List<UserResponseDto> dtoList = userPage.getContent().stream()
+                .map(userMapper::userToUserResponseDto)
                 .toList();
+
+        return new PageDto<>(
+                dtoList,
+                userPage.getNumber(),
+                userPage.getSize(),
+                userPage.getTotalElements(),
+                userPage.getTotalPages(),
+                userPage.isLast()
+        );
+    }
+
+    public PageDto<UserResponseDto> getAllUsers(Pageable pageable) {
+
+        Page<User> userPage = userRepository.findAll(pageable);
+
+        List<UserResponseDto> dtoList = userPage.getContent().stream()
+                .map(userMapper::userToUserResponseDto)
+                .toList();
+
+        return new PageDto<>(
+                dtoList,
+                userPage.getNumber(),
+                userPage.getSize(),
+                userPage.getTotalElements(),
+                userPage.getTotalPages(),
+                userPage.isLast()
+        );
     }
 
     public List<UserResponseDto> getUsersByRole(UserRole role) {
         List<User> roleBasedEntities = userRepository.findByRole(role);
         return roleBasedEntities.stream()
-                .map(userMapper::userToUserResponceDto)
+                .map(userMapper::userToUserResponseDto)
                 .toList();
     }
 
     public List<UserResponseDto> getUsersByEmailVerifiedStatus(Boolean emailVerified) {
         List<User> emailVerifiedStatusEntities = userRepository.findByEmailVerified(emailVerified);
         return emailVerifiedStatusEntities.stream()
-                .map(userMapper::userToUserResponceDto)
+                .map(userMapper::userToUserResponseDto)
                 .toList();
     }
 

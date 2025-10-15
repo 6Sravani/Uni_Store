@@ -51,7 +51,7 @@ public class User {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 50)
     @Builder.Default
-    private UserRole role=UserRole.CUSTOMER;
+    private UserRole role=UserRole.ROLE_CUSTOMER;
 
     @NotNull
     @Column(name = "is_active", nullable = false)
@@ -98,13 +98,13 @@ public class User {
         this.lastName = lastName;
     }
     public boolean isAdmin(){
-        return UserRole.ADMIN.equals(this.role);
+        return UserRole.ROLE_ADMIN.equals(this.role);
     }
     public void promoteToAdmin() {
-        this.role = UserRole.ADMIN;
+        this.role = UserRole.ROLE_ADMIN;
     }
     public void demoteToCustomer() {
-        this.role = UserRole.CUSTOMER;
+        this.role = UserRole.ROLE_CUSTOMER;
     }
     public boolean isActive() {
         return isActive;
