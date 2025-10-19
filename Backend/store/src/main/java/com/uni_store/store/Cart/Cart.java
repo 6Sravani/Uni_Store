@@ -1,5 +1,6 @@
 package com.uni_store.store.Cart;
 
+import com.uni_store.store.Product.ProductVariant;
 import com.uni_store.store.User.User;
 import jakarta.persistence.*;
 import jakarta.persistence.CascadeType;
@@ -9,6 +10,7 @@ import org.hibernate.annotations.*;
 
 import java.time.Instant;
 import java.util.LinkedHashSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -47,9 +49,24 @@ public class Cart {
     private Set<CartItem> cartItems = new LinkedHashSet<>();
 
     // --- Helper Methods ---
-    public void addItem(CartItem item) {
-        this.cartItems.add(item);
-        item.setCart(this);
+    public CartItem addItem(ProductVariant variant,int quantity) {
+        Optional<CartItem> excitingItemOpt = this.cartItems.stream()
+                .filter(item->item.getProductVariant().getId().equals(variant.getId()))
+                .findFirst();
+        if(excitingItemOpt.isPresent()) {
+            CartItem existingItem = excitingItemOpt.get();
+            existingItem.setQuantity(existingItem.getQuantity()+quantity);
+            return existingItem;
+        }
+        else {
+            CartItem newCartItem= CartItem.builder()
+                    .cart(this)
+                    .productVariant(variant)
+                    .quantity(quantity)
+                    .build();
+            this.cartItems.add(newCartItem);
+            return newCartItem;
+        }
     }
 
     public void removeItem(CartItem item) {
