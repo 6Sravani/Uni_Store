@@ -14,6 +14,7 @@ The backend provides a complete and secure RESTful API for the User and Product 
 * **Secure by Design:** Utilizes the Data Transfer Object (DTO) pattern and MapStruct to create a secure API contract, preventing internal data models from being exposed.
 * **Robust Error Handling:** Features a centralized, global exception handler (`@RestControllerAdvice`) and custom security exception handlers to provide consistent and predictable JSON error responses.
 * **Advanced Product Catalog:** A fully normalized schema to support products with complex variations (e.g., size, color), attributes, and multiple images.
+* **Persistent Shopping Cart:** A database-backed cart system using UUIDs that allows users to sync their cart across multiple devices. Includes smart "upsert" logic to handle quantity updates automatically.
 * **High-Performance Queries:** Custom JPQL with `JOIN FETCH` is used to solve the N+1 query problem, ensuring efficient data retrieval.
 
 ---
@@ -58,6 +59,15 @@ These endpoints are public and for browsing the store.
 | `GET` | `/api/categories` | Retrieves the hierarchical list of all categories. |
 | `GET` | `/api/products` | Retrieves a paginated list of all products (supports `?page`, `?size`, `?sort`). |
 | `GET` | `/api/products/{slug}` | Retrieves the full details of a single product by its slug. |
+
+### Cart Endpoints (`/api/cart`)
+These endpoints are protected and allow authenticated users to manage their shopping cart.
+
+| HTTP Method | URL Path | Description |
+| :--- | :--- | :--- |
+| `GET` | `/` | Retrieves the current user's persistent shopping cart. |
+| `POST` | `/items` | Adds an item to the cart. If the item exists, it updates the quantity. |
+| `DELETE` | `/items/{itemId}` | Removes a specific item from the cart. |
 
 ---
 
