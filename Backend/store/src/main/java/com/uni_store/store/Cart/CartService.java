@@ -3,6 +3,7 @@ package com.uni_store.store.Cart;
 import com.uni_store.store.Product.ProductVariant;
 import com.uni_store.store.Product.ProductVariantRepository;
 import com.uni_store.store.User.User;
+import com.uni_store.store.User.UserRepository;
 import com.uni_store.store.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -14,26 +15,30 @@ public class CartService {
     private final CartMapper cartMapper;
     private final ProductVariantRepository productVariantRepository;
     private final CartItemRepository cartItemRepository;
+    private final UserRepository userRepository;
 
-    public CartResponseDto getCartForUser(User user) {
+    public CartResponseDto getCartForUser(String userEmail) {
 
+        User user=findUserByEmail(userEmail);
         Cart cart=getOrCreateCart(user);
-        return cartMapper.ToCartResponseDto(cart);
+        return cartMapper.toCartResponseDto(cart);
     }
 
-    public CartResponseDto addItemToCart(User user, AddToCartRequestDto requestDto) {
-
+    public CartResponseDto addItemToCart(String userEmail, AddToCartRequestDto requestDto) {
+        User user=findUserByEmail(userEmail);
         Cart cart=getOrCreateCart(user);
-        ProductVariant variant=productVariantRepository.findById(requestDto.productVariantId())
+        ProductVariant variant=productVariantRepository.findByIdWithProduct(requestDto.productVariantId())
                 .orElseThrow(() -> new ResourceNotFoundException("Product variant not found"));
         CartItem itemToSave = cart.addItem(variant, requestDto.quantity());
 
         cartItemRepository.save(itemToSave);
 
-        return getCartForUser(user);
+        return cartMapper.toCartResponseDto(cart);
     }
 
-    public CartResponseDto removeItemFromCart(User user,Long cartItemId) {
+    public CartResponseDto removeItemFromCart(String userEmail,Long cartItemId) {
+
+        User user=findUserByEmail(userEmail);
         Cart cart=getOrCreateCart(user);
 
         CartItem itemToRemove = cartItemRepository.findById(cartItemId)
@@ -45,11 +50,16 @@ public class CartService {
         cart.removeItem(itemToRemove);
         cartItemRepository.delete(itemToRemove);
 
-        return cartMapper.ToCartResponseDto(cart);
+        return cartMapper.toCartResponseDto(cart);
+    }
+
+    private User findUserByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + email));
     }
 
     private Cart getOrCreateCart(User user) {
-        return cartRepository.findByUser(user)
+        return cartRepository.findByUserWithDetails(user)
                 .orElseGet(() -> {
                     Cart newcart=Cart.builder()
                             .user(user)

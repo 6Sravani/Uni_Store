@@ -17,15 +17,15 @@ public interface CartMapper {
     @Mapping(target = "sku",source = "productVariant.sku")
     @Mapping(target = "price",source = "productVariant.price")
     @Mapping(target = "quantity",source = "quantity")
-    @Mapping(target = "imageUrl",source = "productVariant.productVImages")
-    CartItemResponseDto ToCartItemResponseDto(CartItem cartItem);
+    @Mapping(target = "imageUrl",source = "productVariant.imageUrl")
+    CartItemResponseDto toCartItemResponseDto(CartItem cartItem);
 
     // Helper method to map a Set of items to a List of DTOs
     List<CartItemResponseDto> toCartItemResponseDtoList(Set<CartItem> items);
 
     @Mapping(target = "totalPrice",source = "cartItems",qualifiedByName = "calculateTotalPrice")
     @Mapping(target = "totalItems",source = "cartItems",qualifiedByName = "calculateTotalItems")
-    CartResponseDto ToCartResponseDto(Cart cart);
+    CartResponseDto toCartResponseDto(Cart cart);
 
     @Named("calculateTotalPrice")
     default BigDecimal calculateTotalPrice(Set<CartItem> cartItems) {
